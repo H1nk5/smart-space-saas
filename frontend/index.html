@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartSpace SaaS - 入口</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 min-h-screen flex items-center justify-center">
+
+<div class="max-w-4xl mx-auto px-4 py-12">
+    <div class="text-center mb-12">
+        <h1 class="text-5xl font-bold text-white mb-4">🏢 SmartSpace SaaS</h1>
+        <p class="text-xl text-gray-300">企业级智慧空间物业管理系统</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- 管理员端 -->
+        <a href="app.html" class="group block bg-white/10 backdrop-blur-lg rounded-2xl p-8 hover:bg-white/20 transition-all duration-300 border border-white/10 hover:border-white/30 hover:transform hover:scale-105">
+            <div class="text-center">
+                <div class="w-20 h-20 bg-blue-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-500/30 transition">
+                    <span class="text-4xl">👨‍💼</span>
+                </div>
+                <h2 class="text-2xl font-bold text-white mb-3">管理端</h2>
+                <p class="text-gray-400 mb-6">系统管理 · 数据分析 · 审计追踪</p>
+                <div class="space-y-2 text-sm text-gray-500">
+                    <p>✓ 仪表盘总览</p>
+                    <p>✓ 车位管理</p>
+                    <p>✓ 车辆调度</p>
+                    <p>✓ 计费中心</p>
+                    <p>✓ 审计日志</p>
+                </div>
+                <div class="mt-6 px-6 py-3 bg-blue-600 rounded-lg text-white font-medium group-hover:bg-blue-500 transition">
+                    进入管理端
+                </div>
+            </div>
+        </a>
+
+        <!-- 操作员端 -->
+        <a href="operator.html" class="group block bg-white/10 backdrop-blur-lg rounded-2xl p-8 hover:bg-white/20 transition-all duration-300 border border-white/10 hover:border-white/30 hover:transform hover:scale-105">
+            <div class="text-center">
+                <div class="w-20 h-20 bg-green-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-green-500/30 transition">
+                    <span class="text-4xl">🚗</span>
+                </div>
+                <h2 class="text-2xl font-bold text-white mb-3">操作员端</h2>
+                <p class="text-gray-400 mb-6">车辆出入 · 快速操作</p>
+                <div class="space-y-2 text-sm text-gray-500">
+                    <p>✓ 车辆入场</p>
+                    <p>✓ 车辆出场</p>
+                    <p>✓ 实时车位状态</p>
+                    <p>✓ 出入记录</p>
+                    <p>✓ 快速结算</p>
+                </div>
+                <div class="mt-6 px-6 py-3 bg-green-600 rounded-lg text-white font-medium group-hover:bg-green-500 transition">
+                    进入操作端
+                </div>
+            </div>
+        </a>
+
+        <!-- 用户端 -->
+        <a href="user.html" class="group block bg-white/10 backdrop-blur-lg rounded-2xl p-8 hover:bg-white/20 transition-all duration-300 border border-white/10 hover:border-white/30 hover:transform hover:scale-105">
+            <div class="text-center">
+                <div class="w-20 h-20 bg-purple-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-purple-500/30 transition">
+                    <span class="text-4xl">👤</span>
+                </div>
+                <h2 class="text-2xl font-bold text-white mb-3">用户端</h2>
+                <p class="text-gray-400 mb-6">停车缴费 · 记录查询</p>
+                <div class="space-y-2 text-sm text-gray-500">
+                    <p>✓ 我的车辆</p>
+                    <p>✓ 停车记录</p>
+                    <p>✓ 在线充值</p>
+                    <p>✓ 交易明细</p>
+                    <p>✓ 账户余额</p>
+                </div>
+                <div class="mt-6 px-6 py-3 bg-purple-600 rounded-lg text-white font-medium group-hover:bg-purple-500 transition">
+                    进入用户端
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- API文档入口 -->
+    <div class="text-center mt-8">
+        <a href="http://127.0.0.1:8080/docs" target="_blank" class="text-gray-400 hover:text-white transition">
+            📚 查看API文档 (Swagger)
+        </a>
+    </div>
+
+    <!-- 测试账号 -->
+    <div class="mt-12 bg-white/5 backdrop-blur rounded-xl p-6 border border-white/10">
+        <h3 class="text-white font-semibold mb-4 text-center">测试账号</h3>
+        <div class="grid grid-cols-3 gap-4 text-sm">
+            <div class="text-center">
+                <p class="text-gray-400">管理端</p>
+                <p class="text-white">TEST / admin / admin123</p>
+            </div>
+            <div class="text-center">
+                <p class="text-gray-400">操作端</p>
+                <p class="text-white">TEST / admin / admin123</p>
+            </div>
+            <div class="text-center">
+                <p class="text-gray-400">用户端</p>
+                <p class="text-white">TEST / admin / admin123</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartSpace - 操作员端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #059669 0%, #10b981 100%); }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen" x-data="app()" x-init="init()">
+
+<!-- 登录 -->
+<template x-if="!isLoggedIn">
+    <div class="min-h-screen flex items-center justify-center gradient-bg">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm mx-4">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="text-3xl">🚗</span>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-900">操作员登录</h1>
+                <p class="text-gray-500 mt-1">车辆出入管理系统</p>
+            </div>
+            <div class="space-y-4">
+                <input x-model="loginForm.tenant_code" type="text" placeholder="租户编码" class="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500">
+                <input x-model="loginForm.username" type="text" placeholder="用户名" class="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500">
+                <input x-model="loginForm.password" type="password" placeholder="密码" @keydown.enter="login()" class="w-full border rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500">
+                <button @click="login()" :disabled="loading" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 font-medium disabled:opacity-50">
+                    <span x-text="loading ? '登录中...' : '登录'"></span>
+                </button>
+                <p x-show="error" class="text-red-500 text-sm text-center" x-text="error"></p>
+            </div>
+            <div class="mt-4 p-3 bg-gray-50 rounded text-sm text-gray-600 text-center">
+                测试: TEST / admin / admin123
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- 主界面 -->
+<template x-if="isLoggedIn">
+    <div>
+        <!-- 顶部栏 -->
+        <nav class="gradient-bg text-white shadow-lg">
+            <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <span class="text-2xl">🚗</span>
+                    <div>
+                        <h1 class="text-lg font-bold">车辆出入管理</h1>
+                        <p class="text-sm opacity-75" x-text="userInfo?.username || ''"></p>
+                    </div>
+                </div>
+                <a href="index.html" class="text-sm hover:bg-white/20 px-3 py-1 rounded">首页</a>
+                <button @click="logout()" class="text-sm hover:bg-white/20 px-3 py-1 rounded">退出</button>
+            </div>
+        </nav>
+
+        <div class="max-w-4xl mx-auto px-4 py-6">
+
+            <!-- 状态卡片 -->
+            <div class="grid grid-cols-3 gap-4 mb-6">
+                <div class="bg-white rounded-xl shadow p-4 text-center">
+                    <p class="text-3xl font-bold text-green-600" x-text="status.available || 0"></p>
+                    <p class="text-sm text-gray-500">空闲车位</p>
+                </div>
+                <div class="bg-white rounded-xl shadow p-4 text-center">
+                    <p class="text-3xl font-bold text-red-600" x-text="status.occupied || 0"></p>
+                    <p class="text-sm text-gray-500">占用中</p>
+                </div>
+                <div class="bg-white rounded-xl shadow p-4 text-center">
+                    <p class="text-3xl font-bold text-blue-600" x-text="status.total || 0"></p>
+                    <p class="text-sm text-gray-500">总车位</p>
+                </div>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <button @click="showEntry=true" class="bg-blue-600 text-white rounded-xl p-6 hover:bg-blue-700 transition shadow-lg cursor-pointer">
+                    <div class="text-center">
+                        <span class="text-4xl">📥</span>
+                        <p class="text-xl font-bold mt-2">车辆入场</p>
+                        <p class="text-sm opacity-75 mt-1">扫描车牌或手动输入</p>
+                    </div>
+                </button>
+                <button @click="showExit=true" class="bg-green-600 text-white rounded-xl p-6 hover:bg-green-700 transition shadow-lg cursor-pointer">
+                    <div class="text-center">
+                        <span class="text-4xl">📤</span>
+                        <p class="text-xl font-bold mt-2">车辆出场</p>
+                        <p class="text-sm opacity-75 mt-1">结算费用并放行</p>
+                    </div>
+                </button>
+            </div>
+
+            <!-- 最近记录 -->
+            <div class="bg-white rounded-xl shadow overflow-hidden">
+                <div class="px-4 py-3 bg-gray-50 border-b">
+                    <h3 class="font-semibold">最近出入记录</h3>
+                </div>
+                <div class="divide-y max-h-96 overflow-y-auto">
+                    <template x-for="log in logs" :key="log.id">
+                        <div class="px-4 py-3 flex items-center justify-between hover:bg-gray-50">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center" :class="log.action === 'entry' ? 'bg-blue-100' : 'bg-green-100'">
+                                    <span x-text="log.action === 'entry' ? '📥' : '📤'"></span>
+                                </div>
+                                <div>
+                                    <p class="font-medium" x-text="log.plate_number"></p>
+                                    <p class="text-xs text-gray-500" x-text="new Date(log.created_at).toLocaleTimeString()"></p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="px-2 py-1 text-xs rounded-full" :class="log.action === 'entry' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'" x-text="log.action === 'entry' ? '入场' : '出场'"></span>
+                                <p x-show="log.fee_amount > 0" class="text-sm font-medium text-green-600 mt-1" x-text="'¥' + (log.fee_amount/100).toFixed(2)"></p>
+                            </div>
+                        </div>
+                    </template>
+                    <p x-show="logs.length === 0" class="text-center text-gray-400 py-8">暂无记录</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- 入场弹窗 -->
+<div x-show="showEntry" x-cloak class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6">
+        <h3 class="text-xl font-bold mb-4 text-center">🚗 车辆入场</h3>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">车牌号</label>
+                <input x-model="entryPlate" type="text" placeholder="京A12345" class="w-full border-2 rounded-lg px-4 py-3 text-lg text-center uppercase focus:outline-none focus:ring-2 focus:ring-blue-500" style="text-transform:uppercase">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <button @click="showEntry=false" class="py-3 bg-gray-100 rounded-lg hover:bg-gray-200 font-medium cursor-pointer">取消</button>
+                <button @click="doEntry()" class="py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium cursor-pointer">确认入场</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 出场弹窗 -->
+<div x-show="showExit" x-cloak class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6">
+        <h3 class="text-xl font-bold mb-4 text-center">🚗 车辆出场</h3>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">车牌号</label>
+                <input x-model="exitPlate" type="text" placeholder="京A12345" class="w-full border-2 rounded-lg px-4 py-3 text-lg text-center uppercase focus:outline-none focus:ring-2 focus:ring-green-500" style="text-transform:uppercase">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">支付方式</label>
+                <select x-model="exitPayment" class="w-full border rounded-lg px-4 py-2">
+                    <option value="wechat">微信支付</option>
+                    <option value="alipay">支付宝</option>
+                    <option value="cash">现金</option>
+                </select>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <button @click="showExit=false" class="py-3 bg-gray-100 rounded-lg hover:bg-gray-200 font-medium cursor-pointer">取消</button>
+                <button @click="doExit()" class="py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium cursor-pointer">确认出场</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 结果弹窗 -->
+<div x-show="showResult" x-cloak class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 text-center">
+        <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" :class="resultSuccess ? 'bg-green-100' : 'bg-red-100'">
+            <span class="text-3xl" x-text="resultSuccess ? '✓' : '✗'"></span>
+        </div>
+        <h3 class="text-xl font-bold mb-2" x-text="resultSuccess ? '操作成功' : '操作失败'"></h3>
+        <p class="text-gray-600 mb-4" x-text="resultMsg"></p>
+        <button @click="showResult=false" class="w-full py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 cursor-pointer">确定</button>
+    </div>
+</div>
+
+<!-- Toast -->
+<div x-show="toast.show" x-transition class="fixed top-4 right-4 z-50">
+    <div class="bg-gray-900 text-white px-6 py-3 rounded-lg shadow-lg" x-text="toast.message"></div>
+</div>
+
+<script>
+const API = 'http://127.0.0.1:8080/api/v1';
+
+function app() {
+    return {
+        isLoggedIn: false,
+        loading: false,
+        error: '',
+        token: null,
+        userInfo: null,
+        showEntry: false,
+        showExit: false,
+        showResult: false,
+        resultSuccess: true,
+        resultMsg: '',
+        loginForm: { tenant_code: 'TEST', username: 'admin', password: 'admin123' },
+        entryPlate: '',
+        exitPlate: '',
+        exitPayment: 'wechat',
+        status: { total: 0, available: 0, occupied: 0 },
+        logs: [],
+        toast: { show: false, message: '' },
+
+        async init() {
+            const saved = localStorage.getItem('operator_token');
+            if (saved) {
+                this.token = saved;
+                await this.checkAuth();
+            }
+        },
+
+        async fetch(method, path, body) {
+            const opts = { method, headers: { 'Content-Type': 'application/json' } };
+            if (this.token) opts.headers['Authorization'] = 'Bearer ' + this.token;
+            if (body) opts.body = JSON.stringify(body);
+            const r = await fetch(API + path, opts);
+            const d = await r.json();
+            if (r.status === 401) { this.logout(); throw new Error('请重新登录'); }
+            if (!r.ok) throw new Error(d.detail || '请求失败');
+            return d;
+        },
+
+        async login() {
+            this.loading = true; this.error = '';
+            try {
+                const d = await this.fetch('POST', '/auth/login', this.loginForm);
+                this.token = d.access_token;
+                localStorage.setItem('operator_token', this.token);
+                await this.checkAuth();
+            } catch (e) { this.error = e.message; }
+            finally { this.loading = false; }
+        },
+
+        async checkAuth() {
+            try {
+                this.userInfo = await this.fetch('GET', '/auth/me');
+                this.isLoggedIn = true;
+                await this.refresh();
+            } catch (e) { this.logout(); }
+        },
+
+        async refresh() {
+            try { this.status = await this.fetch('GET', '/vehicles/status'); } catch {}
+            try { this.logs = await this.fetch('GET', '/vehicles/logs?limit=20'); } catch {}
+        },
+
+        async doEntry() {
+            if (!this.entryPlate) { this.showToast('请输入车牌号'); return; }
+            try {
+                const r = await this.fetch('POST', '/vehicles/entry', { plate_number: this.entryPlate, vehicle_type: 'sedan' });
+                this.resultSuccess = true;
+                this.resultMsg = '车牌: ' + this.entryPlate + '\n车位: ' + r.space_id;
+                this.showResult = true;
+                this.showEntry = false;
+                this.entryPlate = '';
+                await this.refresh();
+            } catch (e) {
+                this.resultSuccess = false;
+                this.resultMsg = e.message;
+                this.showResult = true;
+            }
+        },
+
+        async doExit() {
+            if (!this.exitPlate) { this.showToast('请输入车牌号'); return; }
+            try {
+                const r = await this.fetch('POST', '/vehicles/exit', { plate_number: this.exitPlate, payment_method: this.exitPayment });
+                this.resultSuccess = true;
+                this.resultMsg = '车牌: ' + this.exitPlate + '\n费用: ¥' + (r.fee_amount/100).toFixed(2);
+                this.showResult = true;
+                this.showExit = false;
+                this.exitPlate = '';
+                await this.refresh();
+            } catch (e) {
+                this.resultSuccess = false;
+                this.resultMsg = e.message;
+                this.showResult = true;
+            }
+        },
+
+        logout() {
+            this.token = null; this.isLoggedIn = false;
+            localStorage.removeItem('operator_token');
+        },
+
+        showToast(msg) {
+            this.toast = { show: true, message: msg };
+            setTimeout(() => this.toast.show = false, 3000);
+        }
+    };
+}
+</script>
+</body>
+</html>
