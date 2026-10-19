@@ -7,9 +7,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import time
 import uuid
+from sqlalchemy import text
 
 from app.core.config import settings
-from app.core.database import init_db, close_db
+from app.core.database import init_db, close_db, engine
 from app.api import api_router
 
 
@@ -92,7 +93,9 @@ async def root():
 @app.get("/health")
 async def health_check():
     """健康检查"""
-    return {"status": "healthy", "timestamp": time.time()}
+    async with engine.connect() as connection:
+        await connection.execute(text("SELECT 1"))
+    return {"status": "healthy", "database": "ready", "timestamp": time.time()}
 
 
 if __name__ == "__main__":

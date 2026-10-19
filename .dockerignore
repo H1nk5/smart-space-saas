@@ -1,0 +1,7 @@
+.git
+.github
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+backend/test.db
+backend/smart_space.db

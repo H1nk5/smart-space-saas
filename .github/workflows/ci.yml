@@ -22,3 +22,6 @@ jobs:
           cache-dependency-path: backend/requirements.txt
       - run: pip install -r requirements.txt
       - run: python -m pytest -q
+      - name: Validate Compose deployment
+        working-directory: .
+        run: cp .env.example .env && docker compose config --quiet

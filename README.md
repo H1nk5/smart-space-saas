@@ -104,6 +104,17 @@ python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8080
 |----------|--------|------|
 | TEST | admin | admin123 |
 
+### PostgreSQL 容器部署
+
+```bash
+cp .env.example .env
+# 修改 .env 中的 SECRET_KEY、POSTGRES_PASSWORD 和 DEMO_ADMIN_PASSWORD
+docker compose up -d database backend frontend
+docker compose --profile seed run --rm seed
+```
+
+访问 `http://127.0.0.1:8081`，API 健康检查位于 `http://127.0.0.1:8080/health`。演示租户为 `DEMO`，管理员为 `admin`，密码使用 `.env` 中的 `DEMO_ADMIN_PASSWORD`。生产部署不应运行 `seed` profile。
+
 ---
 
 ## 📁 项目结构
