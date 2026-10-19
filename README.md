@@ -87,12 +87,15 @@ pip install -r requirements.txt
 ### 3. 启动服务
 
 ```bash
-python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8080
+cp ../.env.example .env
+python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8080
 ```
+
+生产环境必须将 `DEBUG` 设为 `false`，并提供至少 32 字节、不可预测的 `SECRET_KEY`。`CORS_ORIGINS` 用逗号分隔允许访问 API 的前端地址；默认不接受任意网站跨域调用。
 
 ### 4. 访问系统
 
-- **入口页面：** 打开 `frontend/index.html`
+- **入口页面：** 在项目根目录运行 `python -m http.server 5173 --directory frontend`，然后打开 http://127.0.0.1:5173
 - **API文档：** http://localhost:8080/docs
 
 ### 测试账号

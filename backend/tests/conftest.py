@@ -2,10 +2,12 @@
 测试配置 - pytest fixtures
 """
 import pytest
-import asyncio
+import os
 from typing import AsyncGenerator
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+
+os.environ.setdefault("SECRET_KEY", "test-secret-that-is-longer-than-thirty-two-bytes")
 
 from app.main import app
 from app.core.database import Base, get_db
@@ -23,14 +25,6 @@ TEST_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
 # 创建测试引擎
 test_engine = create_async_engine(TEST_DATABASE_URL, echo=False)
 test_session_factory = async_sessionmaker(test_engine, class_=AsyncSession, expire_on_commit=False)
-
-
-@pytest.fixture(scope="session")
-def event_loop():
-    """创建事件循环"""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
 
 
 @pytest.fixture(autouse=True)
